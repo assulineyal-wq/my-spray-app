@@ -3,60 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ניהול וחישוב ריסוס</title>
+    <title>מחשבון ריסוס מקצועי</title>
     <style>
-        body { font-family: system-ui, sans-serif; background-color: #f0f2f5; padding: 15px; color: #1c1e21; }
+        body { font-family: system-ui, sans-serif; background-color: #f0f2f5; padding: 15px; color: #1c1e21; line-height: 1.4; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        h2 { color: #2e7d32; text-align: center; margin-top: 0; }
+        h2 { color: #2e7d32; text-align: center; margin-top: 0; margin-bottom: 20px; }
         .input-group { margin-bottom: 12px; }
         label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 14px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background-color: #fff; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .method-selector { background-color: #e8f5e9; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #c8e6c9; }
         button { width: 100%; background-color: #2e7d32; color: white; padding: 15px; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; font-size: 18px; font-weight: bold; }
-        #result { margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 10px; text-align: center; display: none; border: 2px solid #2e7d32; }
-        
-        .history-section { margin-top: 30px; max-width: 500px; margin-left: auto; margin-right: auto; }
-        table { width: 100%; background: white; border-collapse: collapse; border-radius: 10px; overflow: hidden; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        th, td { padding: 10px; text-align: right; border-bottom: 1px solid #eee; }
+        #result { margin-top: 20px; padding: 15px; background: #fff9c4; border-radius: 10px; text-align: center; display: none; border: 2px solid #fbc02d; }
+        .history-section { margin-top: 30px; max-width: 550px; margin-left: auto; margin-right: auto; }
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 10px; overflow-x: auto; font-size: 12px; display: block; }
+        th, td { padding: 8px; text-align: right; border-bottom: 1px solid #eee; min-width: 80px; }
         th { background-color: #f8f9fa; color: #555; }
-        .delete-btn { color: red; cursor: pointer; font-weight: bold; }
+        .delete-btn { color: red; cursor: pointer; font-weight: bold; text-align: center; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>מחשבון ריסוס ויומן שטח</h2>
+    <h2>מחשבון ריסוס ויומן חומרים</h2>
     
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div class="row">
         <div class="input-group">
             <label>תאריך:</label>
             <input type="date" id="date">
         </div>
         <div class="input-group">
-            <label>שם חלקה:</label>
-            <input type="text" id="plotName" placeholder="למשל: הפרדס">
+            <label>חלקה:</label>
+            <input type="text" id="plotName" placeholder="שם חלקה">
         </div>
     </div>
 
-    <div class="input-group">
-        <label>סוג גידול:</label>
-        <input type="text" id="cropType" placeholder="למשל: הדרים / עגבניות">
+    <div class="row">
+        <div class="input-group">
+            <label>גידול:</label>
+            <input type="text" id="cropType" placeholder="סוג גידול">
+        </div>
+        <div class="input-group">
+            <label>שם החומר:</label>
+            <input type="text" id="chemName" placeholder="שם התכשיר">
+        </div>
     </div>
 
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+    <hr>
 
     <div class="input-group">
         <label>נפח המיכל (ליטר):</label>
         <input type="number" id="tankSize" placeholder="למשל: 15">
     </div>
 
-    <div class="input-group">
-        <label>מינון חומר (סמ"ק לדונם):</label>
-        <input type="number" id="dosage" placeholder="לפי התווית">
+    <div class="method-selector">
+        <label>שיטת חישוב מינון:</label>
+        <select id="calcMethod" onchange="toggleMethod()">
+            <option value="dunam">לפי דונם (סמ"ק לדונם)</option>
+            <option value="percent">לפי אחוז (%)</option>
+        </select>
     </div>
 
-    <div class="input-group">
-        <label>מים לדונם (ליטר):</label>
-        <input type="number" id="waterPerDunam" placeholder="למשל: 30">
+    <div id="dunamInput" class="input-group">
+        <div class="row">
+            <div>
+                <label>סמ"ק לדונם:</label>
+                <input type="number" id="dosePerDunam" placeholder="למשל: 200">
+            </div>
+            <div>
+                <label>מים לדונם (ליטר):</label>
+                <input type="number" id="waterPerDunam" placeholder="למשל: 30">
+            </div>
+        </div>
+    </div>
+
+    <div id="percentInput" class="input-group hidden">
+        <label>ריכוז באחוזים (%):</label>
+        <input type="number" id="dosePercent" step="0.01" placeholder="למשל: 0.1">
     </div>
 
     <button onclick="calculateAndSave()">חשב ושמור ביומן</button>
@@ -65,42 +89,101 @@
 </div>
 
 <div class="history-section">
-    <h3 style="text-align: center; color: #555;">היסטוריית ריסוסים</h3>
+    <h3 style="text-align: center; color: #555;">יומן ריסוסים אחרונים</h3>
     <table id="historyTable">
         <thead>
             <tr>
                 <th>תאריך</th>
+                <th>חומר</th>
                 <th>חלקה</th>
-                <th>גידול</th>
-                <th>כמות</th>
+                <th>מינון סופי</th>
                 <th></th>
             </tr>
         </thead>
         <tbody id="historyBody"></tbody>
     </table>
-    <button onclick="clearHistory()" style="background-color: #6c757d; font-size: 14px; padding: 5px; margin-top: 10px;">נקה היסטוריה</button>
 </div>
 
 <script>
-    // הגדרת תאריך של היום כברירת מחדל
     document.getElementById('date').valueAsDate = new Date();
 
-    // טעינת נתונים שמורים (נפח מיכל והיסטוריה)
     window.onload = function() {
         if(localStorage.getItem('tankSize')) document.getElementById('tankSize').value = localStorage.getItem('tankSize');
         if(localStorage.getItem('waterPerDunam')) document.getElementById('waterPerDunam').value = localStorage.getItem('waterPerDunam');
         loadHistory();
     };
 
+    function toggleMethod() {
+        const method = document.getElementById('calcMethod').value;
+        document.getElementById('dunamInput').classList.toggle('hidden', method === 'percent');
+        document.getElementById('percentInput').classList.toggle('hidden', method === 'dunam');
+    }
+
     function calculateAndSave() {
         const date = document.getElementById('date').value;
-        const plot = document.getElementById('plotName').value;
-        const crop = document.getElementById('cropType').value;
-        const tank = document.getElementById('tankSize').value;
-        const dose = document.getElementById('dosage').value;
-        const water = document.getElementById('waterPerDunam').value;
-        const resultDiv = document.getElementById('result');
+        const plot = document.getElementById('plotName').value || "-";
+        const crop = document.getElementById('cropType').value || "-";
+        const chem = document.getElementById('chemName').value || "לא צוין";
+        const tank = parseFloat(document.getElementById('tankSize').value);
+        const method = document.getElementById('calcMethod').value;
+        
+        let finalAmount = 0;
+        let unit = "סמ\"ק";
 
-        if(tank && dose && water && plot) {
-            const finalAmount = (dose * tank) / water;
-            const finalFixed = finalAmount.
+        if (!tank) { alert("נא להזין נפח מיכל"); return; }
+
+        if (method === 'dunam') {
+            const dose = parseFloat(document.getElementById('dosePerDunam').value);
+            const water = parseFloat(document.getElementById('waterPerDunam').value);
+            if (!dose || !water) { alert("מלא מינון לדונם וכמות מים"); return; }
+            finalAmount = (dose * tank) / water;
+            localStorage.setItem('waterPerDunam', water);
+        } else {
+            const percent = parseFloat(document.getElementById('dosePercent').value);
+            if (!percent) { alert("מלא אחוז ריכוז"); return; }
+            // חישוב לפי אחוז: (אחוז / 100) * נפח מיכל * 1000 (כדי להגיע למ"ל)
+            finalAmount = (percent / 100) * tank * 1000;
+        }
+
+        const finalFixed = finalAmount.toFixed(1);
+        localStorage.setItem('tankSize', tank);
+
+        const resultDiv = document.getElementById('result');
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `<strong>תוצאה עבור ${chem}:<br><span style="font-size:24px">${finalFixed} מ"ל</span></strong>`;
+
+        const entry = { date, chem, plot, amount: finalFixed };
+        let history = JSON.parse(localStorage.getItem('sprayHistory') || "[]");
+        history.unshift(entry);
+        localStorage.setItem('sprayHistory', JSON.stringify(history.slice(0, 20))); // שומר 20 אחרונים
+        
+        loadHistory();
+    }
+
+    function loadHistory() {
+        const history = JSON.parse(localStorage.getItem('sprayHistory') || "[]");
+        const body = document.getElementById('historyBody');
+        body.innerHTML = "";
+        history.forEach((item, index) => {
+            body.innerHTML += `
+                <tr>
+                    <td>${item.date.split('-').reverse().join('/')}</td>
+                    <td>${item.chem}</td>
+                    <td>${item.plot}</td>
+                    <td>${item.amount} מ"ל</td>
+                    <td class="delete-btn" onclick="deleteEntry(${index})">🗑️</td>
+                </tr>
+            `;
+        });
+    }
+
+    function deleteEntry(index) {
+        let history = JSON.parse(localStorage.getItem('sprayHistory'));
+        history.splice(index, 1);
+        localStorage.setItem('sprayHistory', JSON.stringify(history));
+        loadHistory();
+    }
+</script>
+
+</body>
+</html>
