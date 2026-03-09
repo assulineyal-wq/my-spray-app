@@ -3,80 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מחשבון ריסוס חכם</title>
+    <title>ניהול וחישוב ריסוס</title>
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; background-color: #f0f2f5; padding: 20px; color: #1c1e21; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); max-width: 450px; margin: auto; }
-        h2 { color: #2e7d32; text-align: center; margin-bottom: 25px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; color: #4b4b4b; }
-        input { width: 100%; padding: 12px; border: 2px solid #e4e6eb; border-radius: 10px; box-sizing: border-box; font-size: 16px; transition: border-color 0.3s; }
-        input:focus { border-color: #2e7d32; outline: none; }
-        button { width: 100%; background-color: #2e7d32; color: white; padding: 15px; border: none; border-radius: 10px; margin-top: 20px; cursor: pointer; font-size: 18px; font-weight: bold; }
-        button:active { transform: scale(0.98); }
-        #result { margin-top: 25px; padding: 20px; background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 12px; text-align: center; display: none; }
-        .unit { font-size: 0.9em; color: #65676b; margin-right: 5px; }
+        body { font-family: system-ui, sans-serif; background-color: #f0f2f5; padding: 15px; color: #1c1e21; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        h2 { color: #2e7d32; text-align: center; margin-top: 0; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 14px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; background-color: #2e7d32; color: white; padding: 15px; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; font-size: 18px; font-weight: bold; }
+        #result { margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 10px; text-align: center; display: none; border: 2px solid #2e7d32; }
+        
+        .history-section { margin-top: 30px; max-width: 500px; margin-left: auto; margin-right: auto; }
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 10px; overflow: hidden; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        th, td { padding: 10px; text-align: right; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; color: #555; }
+        .delete-btn { color: red; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>מחשבון מינון בשטח</h2>
+    <h2>מחשבון ריסוס ויומן שטח</h2>
     
-    <div class="input-group">
-        <label>נפח המיכל שלך <span class="unit">(ליטרים)</span>:</label>
-        <input type="number" id="tankSize" placeholder="כמה ליטר המרסס מכיל?">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="input-group">
+            <label>תאריך:</label>
+            <input type="date" id="date">
+        </div>
+        <div class="input-group">
+            <label>שם חלקה:</label>
+            <input type="text" id="plotName" placeholder="למשל: הפרדס">
+        </div>
     </div>
 
     <div class="input-group">
-        <label>מינון מבוקש <span class="unit">(סמ"ק/גרם לדונם)</span>:</label>
-        <input type="number" id="dosage" placeholder="לפי תווית החומר">
+        <label>סוג גידול:</label>
+        <input type="text" id="cropType" placeholder="למשל: הדרים / עגבניות">
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+
+    <div class="input-group">
+        <label>נפח המיכל (ליטר):</label>
+        <input type="number" id="tankSize" placeholder="למשל: 15">
     </div>
 
     <div class="input-group">
-        <label>כיול: מים לדונם <span class="unit">(ליטרים)</span>:</label>
-        <input type="number" id="waterPerDunam" placeholder="כמה ליטר יוצאים לדונם?">
+        <label>מינון חומר (סמ"ק לדונם):</label>
+        <input type="number" id="dosage" placeholder="לפי התווית">
     </div>
 
-    <button onclick="calculate()">חשב כמות חומר</button>
+    <div class="input-group">
+        <label>מים לדונם (ליטר):</label>
+        <input type="number" id="waterPerDunam" placeholder="למשל: 30">
+    </div>
+
+    <button onclick="calculateAndSave()">חשב ושמור ביומן</button>
 
     <div id="result"></div>
 </div>
 
+<div class="history-section">
+    <h3 style="text-align: center; color: #555;">היסטוריית ריסוסים</h3>
+    <table id="historyTable">
+        <thead>
+            <tr>
+                <th>תאריך</th>
+                <th>חלקה</th>
+                <th>גידול</th>
+                <th>כמות</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+    </table>
+    <button onclick="clearHistory()" style="background-color: #6c757d; font-size: 14px; padding: 5px; margin-top: 10px;">נקה היסטוריה</button>
+</div>
+
 <script>
-    // טעינת נתונים שמורים כשפותחים את האפליקציה
+    // הגדרת תאריך של היום כברירת מחדל
+    document.getElementById('date').valueAsDate = new Date();
+
+    // טעינת נתונים שמורים (נפח מיכל והיסטוריה)
     window.onload = function() {
-        if(localStorage.getItem('tankSize')) {
-            document.getElementById('tankSize').value = localStorage.getItem('tankSize');
-        }
-        if(localStorage.getItem('waterPerDunam')) {
-            document.getElementById('waterPerDunam').value = localStorage.getItem('waterPerDunam');
-        }
+        if(localStorage.getItem('tankSize')) document.getElementById('tankSize').value = localStorage.getItem('tankSize');
+        if(localStorage.getItem('waterPerDunam')) document.getElementById('waterPerDunam').value = localStorage.getItem('waterPerDunam');
+        loadHistory();
     };
 
-    function calculate() {
+    function calculateAndSave() {
+        const date = document.getElementById('date').value;
+        const plot = document.getElementById('plotName').value;
+        const crop = document.getElementById('cropType').value;
         const tank = document.getElementById('tankSize').value;
         const dose = document.getElementById('dosage').value;
         const water = document.getElementById('waterPerDunam').value;
         const resultDiv = document.getElementById('result');
 
-        if(tank && dose && water) {
-            // שמירת הנתונים הקבועים בזיכרון הטלפון/מחשב
-            localStorage.setItem('tankSize', tank);
-            localStorage.setItem('waterPerDunam', water);
-
+        if(tank && dose && water && plot) {
             const finalAmount = (dose * tank) / water;
-            resultDiv.style.display = 'block';
-            resultDiv.innerHTML = `
-                <div style="font-size: 16px; margin-bottom: 5px;">יש להוסיף למיכל:</div>
-                <div style="font-size: 32px; color: #1b5e20; font-weight: 800;">${finalAmount.toFixed(1)}</div>
-                <div style="font-size: 18px; color: #1b5e20;">סמ"ק / גרם חומר</div>
-            `;
-        } else {
-            alert("נא למלא את כל השדות כדי לקבל תוצאה");
-        }
-    }
-</script>
-
-</body>
-</html>
+            const finalFixed = finalAmount.
