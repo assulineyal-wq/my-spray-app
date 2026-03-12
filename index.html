@@ -3,185 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מחשבון ריסוס מקצועי</title>
+    <title>מחשבון ריסוס רב-חומרי</title>
     <style>
-        body { font-family: system-ui, sans-serif; background-color: #f0f2f5; padding: 15px; color: #1c1e21; line-height: 1.4; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        h2 { color: #2e7d32; text-align: center; margin-top: 0; margin-bottom: 20px; }
-        .input-group { margin-bottom: 12px; }
-        label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 14px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background-color: #fff; }
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .method-selector { background-color: #e8f5e9; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #c8e6c9; }
-        button { width: 100%; background-color: #2e7d32; color: white; padding: 15px; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; font-size: 18px; font-weight: bold; }
-        #result { margin-top: 20px; padding: 15px; background: #fff9c4; border-radius: 10px; text-align: center; display: none; border: 2px solid #fbc02d; }
-        .history-section { margin-top: 30px; max-width: 550px; margin-left: auto; margin-right: auto; }
-        table { width: 100%; background: white; border-collapse: collapse; border-radius: 10px; overflow-x: auto; font-size: 12px; display: block; }
-        th, td { padding: 8px; text-align: right; border-bottom: 1px solid #eee; min-width: 80px; }
-        th { background-color: #f8f9fa; color: #555; }
-        .delete-btn { color: red; cursor: pointer; font-weight: bold; text-align: center; }
-        .hidden { display: none; }
+        body { font-family: sans-serif; background-color: #eef2f3; padding: 15px; margin: 0; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); max-width: 450px; margin: auto; }
+        h2 { color: #1b5e20; text-align: center; margin-top: 0; }
+        .input-group { background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-right: 5px solid #2e7d32; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; margin-bottom: 10px; }
+        .chemical-row { border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px; }
+        .btn-add { background-color: #007bff; color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; cursor: pointer; margin-bottom: 10px; font-weight: bold; }
+        .btn-calc { background-color: #2e7d32; color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; cursor: pointer; font-size: 18px; font-weight: bold; }
+        #results { margin-top: 20px; display: none; }
+        .result-item { background: #e8f5e9; padding: 10px; border-radius: 8px; margin-bottom: 5px; border-right: 4px solid #1b5e20; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>מחשבון ריסוס ויומן חומרים</h2>
+    <h2>מחשבון תערובת ריסוס</h2>
     
-    <div class="row">
-        <div class="input-group">
-            <label>תאריך:</label>
-            <input type="date" id="date">
-        </div>
-        <div class="input-group">
-            <label>חלקה:</label>
-            <input type="text" id="plotName" placeholder="שם חלקה">
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="input-group">
-            <label>גידול:</label>
-            <input type="text" id="cropType" placeholder="סוג גידול">
-        </div>
-        <div class="input-group">
-            <label>שם החומר:</label>
-            <input type="text" id="chemName" placeholder="שם התכשיר">
-        </div>
-    </div>
-
-    <hr>
-
     <div class="input-group">
-        <label>נפח המיכל (ליטר):</label>
+        <label>נפח המיכל (ליטרים):</label>
         <input type="number" id="tankSize" placeholder="למשל: 15">
+        
+        <label>כמות מים לדונם (ליטרים):</label>
+        <input type="number" id="waterPerDunam" placeholder="למשל: 30">
     </div>
 
-    <div class="method-selector">
-        <label>שיטת חישוב מינון:</label>
-        <select id="calcMethod" onchange="toggleMethod()">
-            <option value="dunam">לפי דונם (סמ"ק לדונם)</option>
-            <option value="percent">לפי אחוז (%)</option>
-        </select>
-    </div>
-
-    <div id="dunamInput" class="input-group">
-        <div class="row">
-            <div>
-                <label>סמ"ק לדונם:</label>
-                <input type="number" id="dosePerDunam" placeholder="למשל: 200">
-            </div>
-            <div>
-                <label>מים לדונם (ליטר):</label>
-                <input type="number" id="waterPerDunam" placeholder="למשל: 30">
-            </div>
+    <div id="chemicalsContainer">
+        <div class="chemical-row">
+            <label>שם חומר 1 / מינון (סמ"ק לדונם):</label>
+            <input type="text" class="chem-name" placeholder="שם החומר (אופציונלי)">
+            <input type="number" class="chem-dose" placeholder="כמות סמ"ק לדונם">
         </div>
     </div>
 
-    <div id="percentInput" class="input-group hidden">
-        <label>ריכוז באחוזים (%):</label>
-        <input type="number" id="dosePercent" step="0.01" placeholder="למשל: 0.1">
+    <button class="btn-add" onclick="addChemical()">+ הוסף חומר נוסף לתערובת</button>
+    <button class="btn-calc" onclick="calculateAll()">חשב כמויות למיכל</button>
+
+    <div id="results">
+        <h3 style="text-align: center;">תוצאות להכנה:</h3>
+        <div id="resultsList"></div>
     </div>
-
-    <button onclick="calculateAndSave()">חשב ושמור ביומן</button>
-
-    <div id="result"></div>
-</div>
-
-<div class="history-section">
-    <h3 style="text-align: center; color: #555;">יומן ריסוסים אחרונים</h3>
-    <table id="historyTable">
-        <thead>
-            <tr>
-                <th>תאריך</th>
-                <th>חומר</th>
-                <th>חלקה</th>
-                <th>מינון סופי</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody id="historyBody"></tbody>
-    </table>
 </div>
 
 <script>
-    document.getElementById('date').valueAsDate = new Date();
+    let chemCount = 1;
 
-    window.onload = function() {
-        if(localStorage.getItem('tankSize')) document.getElementById('tankSize').value = localStorage.getItem('tankSize');
-        if(localStorage.getItem('waterPerDunam')) document.getElementById('waterPerDunam').value = localStorage.getItem('waterPerDunam');
-        loadHistory();
-    };
-
-    function toggleMethod() {
-        const method = document.getElementById('calcMethod').value;
-        document.getElementById('dunamInput').classList.toggle('hidden', method === 'percent');
-        document.getElementById('percentInput').classList.toggle('hidden', method === 'dunam');
+    function addChemical() {
+        chemCount++;
+        const container = document.getElementById('chemicalsContainer');
+        const div = document.createElement('div');
+        div.className = 'chemical-row';
+        div.innerHTML = `
+            <label>שם חומר ${chemCount} / מינון (סמ"ק לדונם):</label>
+            <input type="text" class="chem-name" placeholder="שם החומר">
+            <input type="number" class="chem-dose" placeholder="כמות סמ"ק לדונם">
+        `;
+        container.appendChild(div);
     }
 
-    function calculateAndSave() {
-        const date = document.getElementById('date').value;
-        const plot = document.getElementById('plotName').value || "-";
-        const crop = document.getElementById('cropType').value || "-";
-        const chem = document.getElementById('chemName').value || "לא צוין";
+    function calculateAll() {
         const tank = parseFloat(document.getElementById('tankSize').value);
-        const method = document.getElementById('calcMethod').value;
-        
-        let finalAmount = 0;
-        let unit = "סמ\"ק";
+        const water = parseFloat(document.getElementById('waterPerDunam').value);
+        const names = document.getElementsByClassName('chem-name');
+        const doses = document.getElementsByClassName('chem-dose');
+        const resultsList = document.getElementById('resultsList');
+        const resultsDiv = document.getElementById('results');
 
-        if (!tank) { alert("נא להזין נפח מיכל"); return; }
-
-        if (method === 'dunam') {
-            const dose = parseFloat(document.getElementById('dosePerDunam').value);
-            const water = parseFloat(document.getElementById('waterPerDunam').value);
-            if (!dose || !water) { alert("מלא מינון לדונם וכמות מים"); return; }
-            finalAmount = (dose * tank) / water;
-            localStorage.setItem('waterPerDunam', water);
-        } else {
-            const percent = parseFloat(document.getElementById('dosePercent').value);
-            if (!percent) { alert("מלא אחוז ריכוז"); return; }
-            // חישוב לפי אחוז: (אחוז / 100) * נפח מיכל * 1000 (כדי להגיע למ"ל)
-            finalAmount = (percent / 100) * tank * 1000;
+        if (!tank || !water) {
+            alert("נא למלא נפח מיכל וכמות מים לדונם");
+            return;
         }
 
-        const finalFixed = finalAmount.toFixed(1);
-        localStorage.setItem('tankSize', tank);
+        resultsList.innerHTML = "";
+        let hasData = false;
 
-        const resultDiv = document.getElementById('result');
-        resultDiv.style.display = 'block';
-        resultDiv.innerHTML = `<strong>תוצאה עבור ${chem}:<br><span style="font-size:24px">${finalFixed} מ"ל</span></strong>`;
+        for (let i = 0; i < doses.length; i++) {
+            const dose = parseFloat(doses[i].value);
+            if (dose) {
+                const name = names[i].value || `חומר ${i + 1}`;
+                const finalAmount = (dose * tank) / water;
+                
+                const item = document.createElement('div');
+                item.className = 'result-item';
+                item.innerHTML = `<strong>${name}:</strong> ${finalAmount.toFixed(1)} סמ"ק`;
+                resultsList.appendChild(item);
+                hasData = true;
+            }
+        }
 
-        const entry = { date, chem, plot, amount: finalFixed };
-        let history = JSON.parse(localStorage.getItem('sprayHistory') || "[]");
-        history.unshift(entry);
-        localStorage.setItem('sprayHistory', JSON.stringify(history.slice(0, 20))); // שומר 20 אחרונים
-        
-        loadHistory();
-    }
-
-    function loadHistory() {
-        const history = JSON.parse(localStorage.getItem('sprayHistory') || "[]");
-        const body = document.getElementById('historyBody');
-        body.innerHTML = "";
-        history.forEach((item, index) => {
-            body.innerHTML += `
-                <tr>
-                    <td>${item.date.split('-').reverse().join('/')}</td>
-                    <td>${item.chem}</td>
-                    <td>${item.plot}</td>
-                    <td>${item.amount} מ"ל</td>
-                    <td class="delete-btn" onclick="deleteEntry(${index})">🗑️</td>
-                </tr>
-            `;
-        });
-    }
-
-    function deleteEntry(index) {
-        let history = JSON.parse(localStorage.getItem('sprayHistory'));
-        history.splice(index, 1);
-        localStorage.setItem('sprayHistory', JSON.stringify(history));
-        loadHistory();
+        if (hasData) {
+            resultsDiv.style.display = 'block';
+        } else {
+            alert("נא להזין מינון לפחות לחומר אחד");
+        }
     }
 </script>
 
