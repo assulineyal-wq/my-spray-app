@@ -3,119 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מחשבון ריסוס מקצועי</title>
+    <title>מחשבון ריסוס - הוספת תכשירים</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f0; padding: 15px; margin: 0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f4f7f4; padding: 15px; margin: 0; }
         .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 500px; margin: auto; border-top: 8px solid #2e7d32; }
-        h2 { color: #1b5e20; text-align: center; margin-bottom: 20px; }
+        h2 { color: #1b5e20; text-align: center; margin-top: 0; }
         
         .section { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e0e0e0; }
         .section-title { font-weight: bold; color: #2e7d32; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
         
         label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #444; }
-        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; margin-bottom: 10px; background: #fff; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; margin-bottom: 10px; }
         
-        .chemical-item { background: #fff; padding: 10px; border-radius: 8px; border-right: 4px solid #4caf50; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .chemical-item { background: #fff; padding: 12px; border-radius: 10px; border-right: 5px solid #4caf50; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
+        .remove-btn { position: absolute; left: 10px; top: 10px; color: red; font-weight: bold; cursor: pointer; border: none; background: none; }
         
-        .btn-add { background-color: #fdfdfd; color: #2e7d32; border: 2px dashed #2e7d32; padding: 10px; border-radius: 8px; width: 100%; cursor: pointer; margin-bottom: 15px; font-weight: bold; }
-        .btn-calc { background-color: #2e7d32; color: white; border: none; padding: 18px; border-radius: 8px; width: 100%; cursor: pointer; font-size: 20px; font-weight: bold; box-shadow: 0 4px 10px rgba(46,125,50,0.3); }
+        .btn-add { background-color: #e8f5e9; color: #2e7d32; border: 2px dashed #2e7d32; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; margin-bottom: 15px; font-weight: bold; font-size: 16px; }
+        .btn-calc { background-color: #2e7d32; color: white; border: none; padding: 18px; border-radius: 8px; width: 100%; cursor: pointer; font-size: 20px; font-weight: bold; transition: 0.3s; }
+        .btn-calc:active { transform: scale(0.98); background-color: #1b5e20; }
         
-        #results { margin-top: 25px; display: none; padding: 20px; background: #e8f5e9; border-radius: 15px; border: 2px solid #2e7d32; }
-        .res-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px style dotted #ccc; }
-        .total-coverage { text-align: center; font-size: 18px; color: #1b5e20; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #2e7d32; }
+        #results { margin-top: 25px; display: none; padding: 20px; background: #fff; border-radius: 15px; border: 2px solid #2e7d32; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .res-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 18px; }
+        .total-coverage { text-align: center; font-size: 19px; color: #1b5e20; margin-bottom: 15px; padding: 10px; background: #e8f5e9; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>יומן ריסוס ומחשבון</h2>
+    <h2>מחשבון תערובת תכשירים</h2>
     
     <div class="section">
         <div class="section-title">פרטי הריסוס</div>
-        <label>תאריך:</label>
-        <input type="date" id="sprayDate">
-        <label>שם הגידול:</label>
-        <input type="text" id="cropName" placeholder="למשל: עגבניות, הדרים">
-        <label>שם/מספר חלקה:</label>
-        <input type="text" id="plotName" placeholder="למשל: חלקה צפונית 2">
-    </div>
-
-    <div class="section">
-        <div class="section-title">נתוני המרסס (כיול)</div>
-        <label>נפח המיכל (ליטרים):</label>
-        <input type="number" id="tankSize" placeholder="כמה ליטר המיכל">
-        <label>כמות מים לדונם (ליטרים):</label>
-        <input type="number" id="waterPerDunam" placeholder="כמה מים מוציא לדונם">
-    </div>
-
-    <div class="section">
-        <div class="section-title">חומרי הדברה בתערובת</div>
-        <div id="chemicalsList">
-            <div class="chemical-item">
-                <input type="text" class="chem-name" placeholder="שם החומר">
-                <input type="number" class="chem-dose" placeholder="מינון (סמ&quot;ק לדונם)">
+        <div style="display: flex; gap: 10px;">
+            <div style="flex: 1;">
+                <label>תאריך:</label>
+                <input type="date" id="sprayDate">
+            </div>
+            <div style="flex: 1;">
+                <label>חלקה:</label>
+                <input type="text" id="plotName" placeholder="שם החלקה">
             </div>
         </div>
-        <button class="btn-add" onclick="addChem()">+ הוסף חומר לתערובת</button>
+        <label>סוג הגידול:</label>
+        <input type="text" id="cropName" placeholder="למשל: פרדס, כרם, פלפל">
     </div>
 
-    <button class="btn-calc" onclick="calculate()">חשב כמויות להכנה</button>
+    <div class="section">
+        <div class="section-title">נתוני מרסס</div>
+        <label>נפח המיכל (ליטר):</label>
+        <input type="number" id="tankSize" placeholder="למשל: 1000">
+        <label>מים לדונם (ליטר):</label>
+        <input type="number" id="waterPerDunam" placeholder="למשל: 35">
+    </div>
+
+    <div class="section">
+        <div class="section-title">רשימת תכשירים</div>
+        <div id="chemicalsList">
+            </div>
+        <button class="btn-add" onclick="addChem()">+ הוסף תכשיר (חומר הדברה)</button>
+    </div>
+
+    <button class="btn-calc" onclick="calculate()">חשב כמויות למיכל</button>
 
     <div id="results">
-        <div id="summaryHeader" style="font-weight: bold; margin-bottom: 10px; text-decoration: underline;"></div>
         <div id="coverage" class="total-coverage"></div>
         <div id="finalAmounts"></div>
-        <p style="font-size: 12px; color: #666; margin-top: 15px; text-align: center;">מומלץ לצלם מסך (Screenshot) לתיעוד.</p>
+        <div style="text-align: center; margin-top: 15px;">
+            <button onclick="window.print()" style="background: none; border: 1px solid #ccc; padding: 5px 10px; border-radius: 5px; cursor: pointer;">הדפס / שמור כ-PDF</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // הגדרת תאריך ברירת מחדל להיום
+    // הגדרת תאריך להיום והוספת שדה ראשון אוטומטית
     document.getElementById('sprayDate').valueAsDate = new Date();
+    
+    // מוסיף שדה ראשון מיד עם טעינת הדף
+    window.onload = addChem;
 
     function addChem() {
+        const container = document.getElementById('chemicalsList');
         const div = document.createElement('div');
         div.className = 'chemical-item';
         div.innerHTML = `
-            <input type="text" class="chem-name" placeholder="שם החומר">
-            <input type="number" class="chem-dose" placeholder="מינון (סמ&quot;ק לדונם)">
+            <button class="remove-btn" onclick="this.parentElement.remove()">X</button>
+            <label>שם התכשיר:</label>
+            <input type="text" class="chem-name" placeholder="למשל: קוצייד">
+            <label>מינון (סמ"ק/גרם לדונם):</label>
+            <input type="number" class="chem-dose" placeholder="כמות לדונם">
         `;
-        document.getElementById('chemicalsList').appendChild(div);
+        container.appendChild(div);
     }
 
     function calculate() {
         const tank = parseFloat(document.getElementById('tankSize').value);
         const water = parseFloat(document.getElementById('waterPerDunam').value);
-        const crop = document.getElementById('cropName').value;
-        const plot = document.getElementById('plotName').value;
-        const date = document.getElementById('sprayDate').value;
         
         if (!tank || !water) {
-            alert("נא למלא נתוני מרסס (נפח וכיול)");
+            alert("חובה למלא נפח מיכל וכמות מים לדונם");
             return;
         }
 
         const coverage = tank / water;
-        document.getElementById('coverage').innerHTML = `המיכל מכסה: <strong>${coverage.toFixed(2)} דונם</strong>`;
-        
-        document.getElementById('summaryHeader').innerHTML = `סיכום לריסוס ב-${crop} (${plot}):`;
+        document.getElementById('coverage').innerHTML = `המיכל מכסה: ${coverage.toFixed(2)} דונם`;
 
         const names = document.getElementsByClassName('chem-name');
         const doses = document.getElementsByClassName('chem-dose');
         let html = "";
+        let count = 0;
 
         for (let i = 0; i < doses.length; i++) {
             const dose = parseFloat(doses[i].value);
             if (dose) {
-                const name = names[i].value || `חומר ${i+1}`;
+                const name = names[i].value || `תכשיר ${i+1}`;
                 const totalAmount = dose * coverage;
-                html += `<div class="res-row"><span>${name}:</span> <strong>${totalAmount.toFixed(1)} סמ"ק</strong></div>`;
+                html += `<div class="res-row"><span>${name}:</span> <strong>${totalAmount.toFixed(1)} סמ"ק/גרם</strong></div>`;
+                count++;
             }
+        }
+
+        if (count === 0) {
+            alert("נא להזין לפחות תכשיר אחד עם מינון");
+            return;
         }
 
         document.getElementById('finalAmounts').innerHTML = html;
         document.getElementById('results').style.display = 'block';
-        window.scrollTo(0, document.body.scrollHeight);
+        
+        // גלילה חלקה לתוצאות
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
     }
 </script>
 
