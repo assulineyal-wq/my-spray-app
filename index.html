@@ -3,215 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>יומן ריסוס מקצועי</title>
+    <title>מחשבון ריסוס מסונכרן GitHub</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f0; padding: 15px; margin: 0; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto 20px; border-top: 6px solid #2e7d32; }
-        h3 { color: #1b5e20; border-bottom: 2px solid #e8f5e9; padding-bottom: 5px; margin: 0 0 15px; }
-        label { display: block; margin: 12px 0 5px; font-weight: bold; color: #333; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .chem-item { background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-right: 5px solid #2e7d32; position: relative; }
+        body { font-family: system-ui, sans-serif; background: #f0f4f0; padding: 15px; margin: 0; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 500px; margin: auto; margin-bottom: 20px; border-top: 6px solid #2e7d32; }
+        h3 { color: #1b5e20; border-bottom: 2px solid #e8f5e9; padding-bottom: 5px; margin-top: 0; }
+        label { display: block; margin: 10px 0 5px; font-weight: bold; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; margin-bottom: 5px; }
+        .chem-item { background: #f9f9f9; padding: 10px; border-radius: 10px; margin-bottom: 10px; border-right: 4px solid #2e7d32; position: relative; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
-        .btn-add { background: #e8f5e9; color: #2e7d32; border: 2px dashed #2e7d32; }
-        .btn-calc { background: #2e7d32; color: white; font-size: 18px; }
-        .btn-export { background: #0277bd; color: white; width: 48%; display: inline-block; font-size: 14px; }
-        .results-box { background: #fffde7; padding: 15px; border-radius: 10px; border: 1px solid #fbc02d; margin-top: 15px; display: none; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; font-size: 13px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        .btn-add { background: #e8f5e9; color: #2e7d32; border: 1px dashed #2e7d32; }
+        .btn-calc { background: #2e7d32; color: white; }
+        #syncStatus { font-size: 11px; text-align: center; color: #666; margin-bottom: 10px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         th { background: #2e7d32; color: white; }
     </style>
 </head>
 <body>
 
+<div id="syncStatus">מתחבר לענן GitHub...</div>
+
 <div class="card">
-    <h3>1. פרטי ריסוס וחלקה</h3>
+    <h3>1. פרטי ריסוס</h3>
     <label>תאריך:</label>
     <input type="date" id="date">
     <label>גידול:</label>
-    <input type="text" id="crop" placeholder="למשל: עגבניות / כרם">
+    <input type="text" id="crop" placeholder="למשל: פרדס">
     <label>שם חלקה:</label>
-    <input type="text" id="plot" placeholder="למשל: חלקה א' 20">
+    <input type="text" id="plot" placeholder="למשל: חלקה ג'">
 </div>
 
 <div class="card">
     <h3>2. הגדרות ומינונים</h3>
     <label>גודל מרסס (ליטר):</label>
-    <input type="number" id="tankSize" placeholder="למשל: 1000">
+    <input type="number" id="tankSize">
     <label>נפח תרסיס לדונם (ליטר):</label>
-    <input type="number" id="waterPerDunam" placeholder="למשל: 30">
+    <input type="number" id="waterPerDunam">
     
-    <div id="chemicalsContainer">
-        <div class="chem-item">
-            <label>שם חומר:</label>
-            <input type="text" class="chem-name" placeholder="שם חומר הדברה">
-            <label>שיטת חישוב:</label>
-            <select class="calc-type">
-                <option value="percent">ריכוז באחוזים (%)</option>
-                <option value="gramLiter">גרם/סמ"ק לליטר מים</option>
-            </select>
-            <label>מינון:</label>
-            <input type="number" step="0.001" class="chem-value" placeholder="ערך המספר">
-        </div>
-    </div>
-    <button class="btn btn-add" onclick="addChemical()">+ הוסף חומר נוסף לתערובת</button>
+    <div id="chemicalsContainer"></div>
+    <button class="btn btn-add" onclick="addChemical()">+ הוסף חומר נוסף</button>
 </div>
 
 <div class="card">
-    <h3>3. סיכום ושמירה ביומן</h3>
-    <button class="btn btn-calc" onclick="calculateAndLog()">חשב ושמור ביומן</button>
+    <h3>3. ביצוע וסנכרון</h3>
+    <button class="btn btn-calc" onclick="processAll()">חשב ושמור בענן</button>
+    <div id="results" style="display:none; background:#fffde7; padding:15px; border-radius:10px; margin-top:15px; border: 1px solid #fbc02d;"></div>
     
-    <div id="results" class="results-box"></div>
-
-    <hr style="margin: 30px 0;">
-    
-    <h3>יומן ריסוסים היסטורי</h3>
+    <h3 style="margin-top:25px;">יומן ריסוסים מסונכרן</h3>
     <div style="overflow-x:auto;">
         <table id="logTable">
-            <thead>
-                <tr>
-                    <th>תאריך</th>
-                    <th>גידול/חלקה</th>
-                    <th>סיכום חומרים למיכל</th>
-                </tr>
-            </thead>
+            <thead><tr><th>תאריך</th><th>גידול/חלקה</th><th>חומרים</th></tr></thead>
             <tbody id="logBody"></tbody>
         </table>
     </div>
-
-    <div style="display:flex; justify-content: space-between; margin-top:15px;">
-        <button class="btn btn-export" onclick="exportToExcel()">יצוא לאקסל</button>
-        <button class="btn btn-export" onclick="exportToPDF()">יצוא ל-PDF</button>
-    </div>
-    <button class="btn" style="background:#f44336; color:white; font-size: 14px;" onclick="clearLog()">מחק את כל היומן</button>
+    <button class="btn" style="background:#0277bd; color:white;" onclick="exportToExcel()">יצוא לאקסל</button>
 </div>
 
 <script>
-    // הגדרת תאריך להיום
+    // --- הגדרות GITHUB - שנה כאן את הפרטים שלך ---
+    const GH_TOKEN = 'כאן_התוקן_שלך'; 
+    const GH_USER = 'שם_המשתמש_שלך';
+    const GH_REPO = 'שם_הריפוזיטורי';
+    const GH_PATH = 'log.json'; // שם הקובץ שיווצר ב-GitHub
+
+    let sprayLog = [];
     document.getElementById('date').valueAsDate = new Date();
-    
-    // טעינת יומן קיים מהזיכרון
-    let sprayLog = JSON.parse(localStorage.getItem('sprayLog')) || [];
-    updateLogTable();
+
+    // 1. טעינה מהענן
+    async function loadFromGithub() {
+        const url = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_PATH}`;
+        try {
+            const res = await fetch(url, { headers: { 'Authorization': `token ${GH_TOKEN}` } });
+            if (res.ok) {
+                const data = await res.json();
+                const content = decodeURIComponent(escape(atob(data.content)));
+                sprayLog = JSON.parse(content);
+                updateLogTable();
+                document.getElementById('syncStatus').innerText = "✅ מסונכרן מול GitHub";
+            } else {
+                document.getElementById('syncStatus').innerText = "ℹ️ אין יומן קיים, ייווצר חדש בשמירה";
+            }
+        } catch (e) {
+            document.getElementById('syncStatus').innerText = "❌ שגיאת חיבור";
+        }
+    }
+
+    // 2. שמירה לענן
+    async function saveToGithub() {
+        document.getElementById('syncStatus').innerText = "⏳ שומר לענן...";
+        const url = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_PATH}`;
+        
+        let sha = "";
+        try {
+            const res = await fetch(url, { headers: { 'Authorization': `token ${GH_TOKEN}` } });
+            if (res.ok) {
+                const data = await res.json();
+                sha = data.sha;
+            }
+        } catch (e) {}
+
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(sprayLog, null, 2))));
+        
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Authorization': `token ${GH_TOKEN}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: "Update log", content: content, sha: sha })
+        });
+
+        if (response.ok) {
+            document.getElementById('syncStatus').innerText = "✅ נשמר בהצלחה!";
+        } else {
+            alert("שגיאת שמירה ל-GitHub");
+        }
+    }
 
     function addChemical() {
-        const container = document.getElementById('chemicalsContainer');
         const div = document.createElement('div');
         div.className = 'chem-item';
         div.innerHTML = `
-            <button style="float:left; color:red; border:none; background:none; cursor:pointer;" onclick="this.parentElement.remove()">X</button>
-            <label>שם חומר:</label>
             <input type="text" class="chem-name" placeholder="שם חומר">
-            <label>שיטת חישוב:</label>
             <select class="calc-type">
-                <option value="percent">ריכוז באחוזים (%)</option>
-                <option value="gramLiter">גרם/סמ"ק לליטר מים</option>
+                <option value="percent">אחוז (%)</option>
+                <option value="gramLiter">גרם/סמ"ק לליטר</option>
             </select>
-            <label>מינון:</label>
-            <input type="number" step="0.001" class="chem-value" placeholder="ערך">
+            <input type="number" step="0.001" class="chem-value" placeholder="מינון">
         `;
-        container.appendChild(div);
+        document.getElementById('chemicalsContainer').appendChild(div);
     }
 
-    function calculateAndLog() {
-        const date = document.getElementById('date').value;
-        const crop = document.getElementById('crop').value;
-        const plot = document.getElementById('plot').value;
+    function processAll() {
         const tank = parseFloat(document.getElementById('tankSize').value);
-        const waterPerDunam = parseFloat(document.getElementById('waterPerDunam').value);
-        
-        if(!date || !tank || !crop) {
-            alert("חובה למלא תאריך, גידול ונפח מרסס");
-            return;
-        }
+        if(!tank) return alert("מלא נפח מרסס");
 
         const names = document.getElementsByClassName('chem-name');
         const types = document.getElementsByClassName('calc-type');
         const values = document.getElementsByClassName('chem-value');
         
-        let resultsHtml = `<strong>סיכום למיכל (${tank} ליטר):</strong><br>`;
-        let logMaterials = [];
+        let materials = [];
+        let displayHtml = "<strong>תוצאות למיכל:</strong><br>";
 
         for(let i=0; i<names.length; i++) {
             let val = parseFloat(values[i].value);
-            let name = names[i].value || "חומר " + (i+1);
-            let totalAmount = 0;
-
             if(val) {
-                if(types[i].value === 'percent') {
-                    totalAmount = (val / 100) * tank * 1000;
-                } else {
-                    totalAmount = val * tank;
-                }
-                resultsHtml += `• ${name}: ${totalAmount.toFixed(1)} סמ"ק/גרם<br>`;
-                logMaterials.push(`${name}: ${totalAmount.toFixed(1)}`);
+                let amount = (types[i].value === 'percent') ? (val/100)*tank*1000 : val*tank;
+                let mText = `${names[i].value || 'חומר'}: ${amount.toFixed(1)} סמ"ק/גרם`;
+                materials.push(mText);
+                displayHtml += mText + "<br>";
             }
         }
 
-        if(logMaterials.length === 0) {
-            alert("לא הוזנו חומרים לחישוב");
-            return;
-        }
-
-        // הצגת תוצאות במסך
-        document.getElementById('results').innerHTML = resultsHtml;
-        document.getElementById('results').style.display = 'block';
-
-        // שמירה ביומן
         const entry = {
-            date: date,
-            info: `${crop} (${plot})`,
-            materials: logMaterials.join(', ')
+            date: document.getElementById('date').value,
+            info: `${document.getElementById('crop').value} (${document.getElementById('plot').value})`,
+            materials: materials.join(', ')
         };
-        sprayLog.unshift(entry); // הוספה לראש הרשימה
-        localStorage.setItem('sprayLog', JSON.stringify(sprayLog));
+
+        sprayLog.unshift(entry);
+        document.getElementById('results').innerHTML = displayHtml;
+        document.getElementById('results').style.display = 'block';
         updateLogTable();
+        saveToGithub();
     }
 
     function updateLogTable() {
         const body = document.getElementById('logBody');
-        body.innerHTML = "";
-        sprayLog.forEach(e => {
-            body.innerHTML += `<tr><td>${e.date}</td><td>${e.info}</td><td>${e.materials}</td></tr>`;
-        });
-    }
-
-    function clearLog() {
-        if(confirm("האם למחוק את כל היסטוריית הריסוסים מהיומן?")) {
-            sprayLog = [];
-            localStorage.removeItem('sprayLog');
-            updateLogTable();
-        }
+        body.innerHTML = sprayLog.map(e => `<tr><td>${e.date}</td><td>${e.info}</td><td>${e.materials}</td></tr>`).join('');
     }
 
     function exportToExcel() {
-        if(sprayLog.length === 0) return alert("היומן ריק");
         const ws = XLSX.utils.json_to_sheet(sprayLog);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "SprayLog");
-        XLSX.writeFile(wb, "יומן_ריסוס.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "Log");
+        XLSX.writeFile(wb, "SprayLog.xlsx");
     }
 
-    function exportToPDF() {
-        if(sprayLog.length === 0) return alert("היומן ריק");
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('p', 'pt');
-        doc.addFont('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf', 'Roboto', 'normal');
-        doc.setFont('Roboto');
-        doc.text("יומן ריסוסים", 40, 30);
-        doc.autoTable({ html: '#logTable', styles: { font: 'Roboto', halign: 'right' } });
-        doc.save("יומן_ריסוס.pdf");
-    }
+    window.onload = () => { addChemical(); loadFromGithub(); };
 </script>
-
 </body>
 </html>
-echo "# farm" >> README.md
-git init
-git add README.md
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://github.com/assulineyal-wq/farm.git
-git push -u origin main
