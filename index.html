@@ -3,95 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מחשבון ריסוס לפי אחוזים</title>
+    <title>מערכת ניהול ריסוס מקצועית</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f0f7ff; padding: 15px; margin: 0; }
-        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 500px; margin: auto; border-top: 8px solid #007bff; }
-        h2 { color: #0056b3; text-align: center; margin-top: 0; }
-        .section { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e0e0e0; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #444; }
-        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; margin-bottom: 10px; }
-        .chemical-item { background: #fff; padding: 12px; border-radius: 10px; border-right: 5px solid #007bff; margin-bottom: 10px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .remove-btn { position: absolute; left: 10px; top: 10px; color: red; font-weight: bold; cursor: pointer; border: none; background: none; }
-        .btn-add { background-color: #f0f7ff; color: #0056b3; border: 2px dashed #007bff; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; margin-bottom: 15px; font-weight: bold; }
-        .btn-calc { background-color: #007bff; color: white; border: none; padding: 18px; border-radius: 8px; width: 100%; cursor: pointer; font-size: 20px; font-weight: bold; }
-        #results { margin-top: 25px; display: none; padding: 20px; background: #e7f3ff; border-radius: 15px; border: 2px solid #007bff; }
-        .res-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #cce5ff; font-size: 18px; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f4f7f6; padding: 15px; margin: 0; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 600px; margin: auto; margin-bottom: 20px; }
+        h3 { color: #2e7d32; border-bottom: 2px solid #e8f5e9; padding-bottom: 5px; margin-top: 0; }
+        label { display: block; margin: 10px 0 5px; font-weight: bold; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; margin-bottom: 5px; font-size: 16px; }
+        .chem-item { background: #f9f9f9; padding: 10px; border-radius: 10px; margin-bottom: 10px; border-right: 4px solid #2e7d32; position: relative; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; transition: 0.2s; }
+        .btn-add { background: #e8f5e9; color: #2e7d32; border: 1px dashed #2e7d32; }
+        .btn-calc { background: #2e7d32; color: white; }
+        .btn-export { background: #0277bd; color: white; width: 48%; display: inline-block; }
+        #logTable { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        #logTable th, #logTable td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+        #logTable th { background: #2e7d32; color: white; }
+        .results-box { background: #fffde7; padding: 15px; border-radius: 10px; border: 1px solid #fbc02d; margin-top: 15px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>מחשבון ריסוס (לפי אחוז)</h2>
+    <h3>1. פרטי ריסוס</h3>
+    <label>תאריך:</label>
+    <input type="date" id="date">
+    <label>גידול:</label>
+    <input type="text" id="crop" placeholder="למשל: עגבניות">
+    <label>שם חלקה:</label>
+    <input type="text" id="plot" placeholder="למשל: חלקה א'">
+</div>
+
+<div class="card">
+    <h3>2. הגדרות ומינונים</h3>
+    <label>גודל מרסס (ליטר):</label>
+    <input type="number" id="tankSize" placeholder="למשל: 1000">
+    <label>נפח תרסיס לדונם (ליטר):</label>
+    <input type="number" id="waterPerDunam" placeholder="למשל: 30">
     
-    <div class="section">
-        <label>שם החלקה / גידול:</label>
-        <input type="text" id="plotInfo" placeholder="למשל: פרדס - חלקה 3">
-        <label>נפח המיכל (ליטר):</label>
-        <input type="number" id="tankSize" placeholder="למשל: 15 או 500">
+    <div id="chemicalsContainer">
+        <div class="chem-item">
+            <label>שם חומר:</label>
+            <input type="text" class="chem-name" placeholder="שם החומר">
+            <label>סוג מינון:</label>
+            <select class="calc-type">
+                <option value="percent">לפי אחוז (%)</option>
+                <option value="gramLiter">גרם/סמ"ק לליטר</option>
+            </select>
+            <label>ערך המינון:</label>
+            <input type="number" step="0.001" class="chem-value" placeholder="למשל: 0.5">
+        </div>
     </div>
+    <button class="btn btn-add" onclick="addChemical()">+ הוסף חומר נוסף</button>
+</div>
 
-    <div class="section">
-        <div style="font-weight:bold; color:#0056b3; margin-bottom:10px;">רשימת תכשירים:</div>
-        <div id="chemicalsList"></div>
-        <button class="btn-add" onclick="addChem()">+ הוסף תכשיר</button>
-    </div>
+<div class="card">
+    <h3>3. ביצוע ושמירה</h3>
+    <button class="btn btn-calc" onclick="processAll()">חשב ושמור ביומן</button>
+    
+    <div id="results" class="results-box"></div>
 
-    <button class="btn-calc" onclick="calculate()">חשב כמויות למיכל</button>
-
-    <div id="results">
-        <div id="summaryTitle" style="font-weight:bold; margin-bottom:10px;"></div>
-        <div id="finalAmounts"></div>
-        <p style="font-size: 12px; text-align: center; margin-top: 15px;">החישוב מתבצע לפי ריכוז מנפח המים.</p>
+    <div style="margin-top:20px;">
+        <h3>יומן ריסוסים</h3>
+        <div style="overflow-x:auto;">
+            <table id="logTable">
+                <thead>
+                    <tr>
+                        <th>תאריך</th>
+                        <th>גידול/חלקה</th>
+                        <th>חומרים וכמויות</th>
+                    </tr>
+                </thead>
+                <tbody id="logBody"></tbody>
+            </table>
+        </div>
+        <div style="display:flex; justify-content: space-between; margin-top:10px;">
+            <button class="btn btn-export" onclick="exportToExcel()">יצוא לאקסל</button>
+            <button class="btn btn-export" onclick="exportToPDF()">יצוא ל-PDF</button>
+        </div>
+        <button class="btn" style="background:#f44336; color:white; margin-top:10px;" onclick="clearLog()">מחק יומן</button>
     </div>
 </div>
 
 <script>
-    window.onload = addChem;
+    document.getElementById('date').valueAsDate = new Date();
+    let sprayLog = JSON.parse(localStorage.getItem('sprayLog')) || [];
+    updateLogTable();
 
-    function addChem() {
-        const container = document.getElementById('chemicalsList');
+    function addChemical() {
         const div = document.createElement('div');
-        div.className = 'chemical-item';
+        div.className = 'chem-item';
         div.innerHTML = `
-            <button class="remove-btn" onclick="this.parentElement.remove()">X</button>
-            <label>שם התכשיר:</label>
-            <input type="text" class="chem-name" placeholder="למשל: שמן קיצי">
-            <label>ריכוז נדרש (ב-%):</label>
-            <input type="number" class="chem-percent" step="0.01" placeholder="למשל: 1.5">
+            <button style="float:left; color:red; border:none; background:none; cursor:pointer;" onclick="this.parentElement.remove()">X</button>
+            <label>שם חומר:</label>
+            <input type="text" class="chem-name" placeholder="שם החומר">
+            <label>סוג מינון:</label>
+            <select class="calc-type">
+                <option value="percent">לפי אחוז (%)</option>
+                <option value="gramLiter">גרם/סמ"ק לליטר</option>
+            </select>
+            <label>ערך המינון:</label>
+            <input type="number" step="0.001" class="chem-value" placeholder="ערך">
         `;
-        container.appendChild(div);
+        document.getElementById('chemicalsContainer').appendChild(div);
     }
 
-    function calculate() {
+    function processAll() {
         const tank = parseFloat(document.getElementById('tankSize').value);
-        if (!tank) { alert("נא להזין נפח מיכל"); return; }
+        const date = document.getElementById('date').value;
+        const crop = document.getElementById('crop').value;
+        const plot = document.getElementById('plot').value;
+        
+        if(!tank || !crop) { alert("מלא פרטי גידול ומרסס"); return; }
 
         const names = document.getElementsByClassName('chem-name');
-        const percents = document.getElementsByClassName('chem-percent');
-        let html = "";
-        let count = 0;
+        const types = document.getElementsByClassName('calc-type');
+        const values = document.getElementsByClassName('chem-value');
+        
+        let resultsHtml = "<strong>כמויות למיכל:</strong><br>";
+        let logEntry = { date, info: `${crop} - ${plot}`, materials: [] };
 
-        for (let i = 0; i < percents.length; i++) {
-            const pct = parseFloat(percents[i].value);
-            if (pct) {
-                const name = names[i].value || `תכשיר ${i+1}`;
-                // חישוב: (אחוז / 100) * ליטרים במיכל * 1000 כדי לקבל סמ"ק
-                const amountCc = (pct / 100) * tank * 1000;
-                
-                html += `<div class="res-row">
-                            <span>${name} (${pct}%):</span> 
-                            <strong>${amountCc.toLocaleString()} סמ"ק</strong>
-                         </div>`;
-                count++;
+        for(let i=0; i<names.length; i++) {
+            let amount = 0;
+            let val = parseFloat(values[i].value);
+            let name = names[i].value || "חומר " + (i+1);
+            
+            if(types[i].value === 'percent') {
+                amount = (val / 100) * tank * 1000; // סמ"ק
+            } else {
+                amount = val * tank; // גרם/סמ"ק לליטר כפול ליטרים
+            }
+
+            if(amount > 0) {
+                resultsHtml += `${name}: ${amount.toFixed(1)} סמ"ק/גרם<br>`;
+                logEntry.materials.push(`${name}: ${amount.toFixed(1)}`);
             }
         }
 
-        if (count === 0) { alert("נא להזין לפחות תכשיר אחד"); return; }
-
-        document.getElementById('summaryTitle').innerText = "עבור מיכל של " + tank + " ליטר:";
-        document.getElementById('finalAmounts').innerHTML = html;
+        document.getElementById('results').innerHTML = resultsHtml;
         document.getElementById('results').style.display = 'block';
+
+        sprayLog.push(logEntry);
+        localStorage.setItem('sprayLog', JSON.stringify(sprayLog));
+        updateLogTable();
+    }
+
+    function updateLogTable() {
+        const body = document.getElementById('logBody');
+        body.innerHTML = "";
+        sprayLog.forEach(entry => {
+            const row = `<tr><td>${entry.date}</td><td>${entry.info}</td><td>${entry.materials.join(', ')}</td></tr>`;
+            body.innerHTML += row;
+        });
+    }
+
+    function clearLog() { if(confirm("למחוק הכל?")) { sprayLog = []; localStorage.clear(); updateLogTable(); } }
+
+    function exportToExcel() {
+        const ws = XLSX.utils.json_to_sheet(sprayLog.map(e => ({
+            "תאריך": e.date, "גידול/חלקה": e.info, "חומרים": e.materials.join(', ')
+        })));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "SprayLog");
+        XLSX.writeFile(wb, "Spray_Log.xlsx");
+    }
+
+    function exportToPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text("Spray Log - " + new Date().toLocaleDateString(), 10, 10);
+        doc.autoTable({ html: '#logTable', margin: { top: 20 } });
+        doc.save("Spray_Log.pdf");
     }
 </script>
 
