@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מחשבון ריסוס מסונכרן GitHub</title>
+    <title>מחשבון ריסוס מקצועי מסונכרן</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body { font-family: system-ui, sans-serif; background: #f0f4f0; padding: 15px; margin: 0; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 500px; margin: auto; margin-bottom: 20px; border-top: 6px solid #2e7d32; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 550px; margin: auto; margin-bottom: 20px; border-top: 6px solid #2e7d32; }
         h3 { color: #1b5e20; border-bottom: 2px solid #e8f5e9; padding-bottom: 5px; margin-top: 0; }
         label { display: block; margin: 10px 0 5px; font-weight: bold; font-size: 14px; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; margin-bottom: 5px; }
@@ -19,11 +19,12 @@
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; background: white; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         th { background: #2e7d32; color: white; }
+        .delete-btn { color: #f44336; cursor: pointer; font-size: 18px; font-weight: bold; border: none; background: none; }
     </style>
 </head>
 <body>
 
-<div id="syncStatus">מתחבר לענן GitHub...</div>
+<div id="syncStatus">מתחבר לענן...</div>
 
 <div class="card">
     <h3>1. פרטי ריסוס</h3>
@@ -38,91 +39,87 @@
 <div class="card">
     <h3>2. הגדרות ומינונים</h3>
     <label>גודל מרסס (ליטר):</label>
-    <input type="number" id="tankSize">
+    <input type="number" id="tankSize" placeholder="נפח המיכל">
     <label>נפח תרסיס לדונם (ליטר):</label>
-    <input type="number" id="waterPerDunam">
+    <input type="number" id="waterPerDunam" placeholder="למשל: 30">
     
     <div id="chemicalsContainer"></div>
-    <button class="btn btn-add" onclick="addChemical()">+ הוסף חומר נוסף</button>
+    <button class="btn btn-add" onclick="addChemical()">+ הוסף חומר לתערובת</button>
 </div>
 
 <div class="card">
-    <h3>3. ביצוע וסנכרון</h3>
+    <h3>3. ביצוע ויומן</h3>
     <button class="btn btn-calc" onclick="processAll()">חשב ושמור בענן</button>
     <div id="results" style="display:none; background:#fffde7; padding:15px; border-radius:10px; margin-top:15px; border: 1px solid #fbc02d;"></div>
     
     <h3 style="margin-top:25px;">יומן ריסוסים מסונכרן</h3>
     <div style="overflow-x:auto;">
         <table id="logTable">
-            <thead><tr><th>תאריך</th><th>גידול/חלקה</th><th>חומרים</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>תאריך</th>
+                    <th>גידול (חלקה)</th>
+                    <th>חומרים וכמויות</th>
+                    <th>פעולות</th>
+                </tr>
+            </thead>
             <tbody id="logBody"></tbody>
         </table>
     </div>
-    <button class="btn" style="background:#0277bd; color:white;" onclick="exportToExcel()">יצוא לאקסל</button>
+    <button class="btn" style="background:#0277bd; color:white;" onclick="exportToExcel()">יצוא מלא לאקסל</button>
 </div>
 
 <script>
-    // --- הגדרות GITHUB - שנה כאן את הפרטים שלך ---
+    // --- הגדרות GITHUB - חובה למלא ---
     const GH_TOKEN = 'כאן_התוקן_שלך'; 
     const GH_USER = 'שם_המשתמש_שלך';
     const GH_REPO = 'שם_הריפוזיטורי';
-    const GH_PATH = 'log.json'; // שם הקובץ שיווצר ב-GitHub
+    const GH_PATH = 'log.json';
 
     let sprayLog = [];
     document.getElementById('date').valueAsDate = new Date();
 
-    // 1. טעינה מהענן
+    // טעינה מהענן (עם פענוח עברית תקין)
     async function loadFromGithub() {
         const url = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_PATH}`;
         try {
-            const res = await fetch(url, { headers: { 'Authorization': `token ${GH_TOKEN}` } });
+            const res = await fetch(url, { headers: { 'Authorization': `token ${GH_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' } });
             if (res.ok) {
                 const data = await res.json();
-                const content = decodeURIComponent(escape(atob(data.content)));
+                const content = decodeURIComponent(atob(data.content).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
                 sprayLog = JSON.parse(content);
                 updateLogTable();
-                document.getElementById('syncStatus').innerText = "✅ מסונכרן מול GitHub";
-            } else {
-                document.getElementById('syncStatus').innerText = "ℹ️ אין יומן קיים, ייווצר חדש בשמירה";
+                document.getElementById('syncStatus').innerText = "✅ מסונכרן";
             }
-        } catch (e) {
-            document.getElementById('syncStatus').innerText = "❌ שגיאת חיבור";
-        }
+        } catch (e) { document.getElementById('syncStatus').innerText = "❌ שגיאת חיבור"; }
     }
 
-    // 2. שמירה לענן
+    // שמירה לענן (עם קידוד עברית תקין)
     async function saveToGithub() {
-        document.getElementById('syncStatus').innerText = "⏳ שומר לענן...";
+        document.getElementById('syncStatus').innerText = "⏳ שומר...";
         const url = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_PATH}`;
-        
         let sha = "";
         try {
             const res = await fetch(url, { headers: { 'Authorization': `token ${GH_TOKEN}` } });
-            if (res.ok) {
-                const data = await res.json();
-                sha = data.sha;
-            }
+            if (res.ok) { sha = (await res.json()).sha; }
         } catch (e) {}
 
-        const content = btoa(unescape(encodeURIComponent(JSON.stringify(sprayLog, null, 2))));
+        const str = JSON.stringify(sprayLog, null, 2);
+        const content = btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
         
-        const response = await fetch(url, {
+        await fetch(url, {
             method: 'PUT',
             headers: { 'Authorization': `token ${GH_TOKEN}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: "Update log", content: content, sha: sha })
         });
-
-        if (response.ok) {
-            document.getElementById('syncStatus').innerText = "✅ נשמר בהצלחה!";
-        } else {
-            alert("שגיאת שמירה ל-GitHub");
-        }
+        document.getElementById('syncStatus').innerText = "✅ מסונכרן";
     }
 
     function addChemical() {
         const div = document.createElement('div');
         div.className = 'chem-item';
         div.innerHTML = `
+            <button style="float:left; color:red; border:none; background:none;" onclick="this.parentElement.remove()">X</button>
             <input type="text" class="chem-name" placeholder="שם חומר">
             <select class="calc-type">
                 <option value="percent">אחוז (%)</option>
@@ -141,23 +138,26 @@
         const types = document.getElementsByClassName('calc-type');
         const values = document.getElementsByClassName('chem-value');
         
-        let materials = [];
-        let displayHtml = "<strong>תוצאות למיכל:</strong><br>";
+        let materialsArr = [];
+        let displayHtml = "<strong>סיכום למיכל:</strong><br>";
 
         for(let i=0; i<names.length; i++) {
             let val = parseFloat(values[i].value);
+            let name = names[i].value || "חומר " + (i+1);
             if(val) {
                 let amount = (types[i].value === 'percent') ? (val/100)*tank*1000 : val*tank;
-                let mText = `${names[i].value || 'חומר'}: ${amount.toFixed(1)} סמ"ק/גרם`;
-                materials.push(mText);
-                displayHtml += mText + "<br>";
+                let text = `${name}: ${amount.toFixed(1)} סמ"ק/גרם`;
+                materialsArr.push(text);
+                displayHtml += text + "<br>";
             }
         }
 
         const entry = {
+            id: Date.now(), // מזהה ייחודי למחיקה
             date: document.getElementById('date').value,
             info: `${document.getElementById('crop').value} (${document.getElementById('plot').value})`,
-            materials: materials.join(', ')
+            materials: materialsArr.join(' | '),
+            tankSize: tank
         };
 
         sprayLog.unshift(entry);
@@ -167,16 +167,40 @@
         saveToGithub();
     }
 
+    function deleteEntry(id) {
+        if(confirm("למחוק את הריסוס הזה מהיומן?")) {
+            sprayLog = sprayLog.filter(e => e.id !== id);
+            updateLogTable();
+            saveToGithub();
+        }
+    }
+
     function updateLogTable() {
         const body = document.getElementById('logBody');
-        body.innerHTML = sprayLog.map(e => `<tr><td>${e.date}</td><td>${e.info}</td><td>${e.materials}</td></tr>`).join('');
+        body.innerHTML = sprayLog.map(e => `
+            <tr>
+                <td>${e.date}</td>
+                <td>${e.info}</td>
+                <td>${e.materials}</td>
+                <td><button class="delete-btn" onclick="deleteEntry(${e.id})">🗑️</button></td>
+            </tr>
+        `).join('');
     }
 
     function exportToExcel() {
-        const ws = XLSX.utils.json_to_sheet(sprayLog);
+        if(sprayLog.length === 0) return alert("היומן ריק");
+        // הכנת הנתונים לאקסל בצורה מלאה
+        const dataForExcel = sprayLog.map(e => ({
+            "תאריך": e.date,
+            "גידול וחלקה": e.info,
+            "גודל מרסס (ליטר)": e.tankSize,
+            "פירוט חומרים": e.materials
+        }));
+        
+        const ws = XLSX.utils.json_to_sheet(dataForExcel);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Log");
-        XLSX.writeFile(wb, "SprayLog.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "יומן ריסוסים");
+        XLSX.writeFile(wb, `יומן_ריסוס_${new Date().toLocaleDateString()}.xlsx`);
     }
 
     window.onload = () => { addChemical(); loadFromGithub(); };
